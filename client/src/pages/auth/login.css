@@ -1,0 +1,391 @@
+/* LOGIN PAGE */
+
+.login-page {
+  min-height: 100vh;
+  padding: 32px 4.45%;
+  background: #f1f2ed;
+  color: #19251f;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* HEADER */
+
+.login-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 44px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.login-brand img {
+  width: 68px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.login-brand h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.student-access-button {
+  min-width: 154px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #126644;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.student-access-button:hover {
+  background: #e5eee8;
+}
+
+/* MAIN LAYOUT */
+
+.login-layout {
+  display: grid;
+  grid-template-columns: 0.62fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* LEFT COLUMN */
+
+.login-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.login-intro-panel {
+  min-height: 447px;
+  padding: 42px 40px;
+  border-radius: 12px;
+  background: #17251e;
+  color: #ffffff;
+}
+
+.panel-eyebrow {
+  display: block;
+  margin-bottom: 24px;
+  color: #ffdf58;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.login-intro-panel h2 {
+  margin: 0 0 25px;
+  font-size: clamp(34px, 3.6vw, 52px);
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -1px;
+}
+
+.login-intro-panel p {
+  margin: 0;
+  color: #d0d8d2;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.school-info-panel {
+  min-height: 222px;
+  padding: 33px 32px;
+  border-radius: 12px;
+  background: #ffe16a;
+  color: #17251e;
+}
+
+.school-info-panel span {
+  display: block;
+  margin-bottom: 17px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.school-info-panel h3 {
+  margin: 0 0 13px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.school-info-panel p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* RIGHT COLUMN / LOGIN FORM */
+
+.login-form-panel {
+  min-width: 0;
+  min-height: 816px;
+  padding: 78px 56px 48px;
+  border: 1px solid #d5dbd5;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.login-form-content {
+  width: 100%;
+  max-width: 690px;
+  margin: 0 auto;
+}
+
+.login-form-content > h2 {
+  margin: 0 0 15px;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.login-subtitle {
+  margin: 0 0 31px;
+  color: #5c6961;
+  font-size: 17px;
+}
+
+/* FORM FIELDS */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 27px;
+}
+
+.form-group label {
+  margin-bottom: 11px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.form-group input {
+  width: 100%;
+  height: 59px;
+  padding: 0 16px;
+  border: 1px solid #89988e;
+  border-radius: 5px;
+  outline: none;
+  background: #ffffff;
+  color: #19251f;
+  font-family: inherit;
+  font-size: 16px;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder {
+  color: #68746d;
+}
+
+.form-group input:focus {
+  border: 2px solid #176a49;
+  box-shadow: 0 0 0 3px #ffdf58;
+}
+
+.form-group small {
+  margin-top: 10px;
+  color: #68746d;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* PASSWORD FIELD */
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 75px;
+}
+
+.show-password-button {
+  position: absolute;
+  right: 15px;
+  border: none;
+  background: transparent;
+  color: #126644;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* SIGN IN BUTTON */
+
+.sign-in-button {
+  width: 100%;
+  height: 57px;
+  margin-top: 1px;
+  border: none;
+  border-radius: 6px;
+  background: #176849;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sign-in-button:hover {
+  background: #10563b;
+}
+
+/* FORGOT PASSWORD */
+
+.forgot-password-button {
+  margin-top: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #126644;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.forgot-password-button:hover {
+  text-decoration: underline;
+}
+
+/* HELP BOX */
+
+.login-help-box {
+  margin-top: 70px;
+  padding: 25px 24px;
+  border-radius: 9px;
+  background: #f3f5f0;
+}
+
+.login-help-box h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.login-help-box p {
+  margin: 0;
+  color: #606d65;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* RESPONSIVE DESIGN */
+
+@media (max-width: 1000px) {
+  .login-page {
+    padding: 25px 4%;
+  }
+
+  .login-layout {
+    grid-template-columns: 0.8fr 1fr;
+  }
+
+  .login-intro-panel {
+    padding: 35px 28px;
+  }
+
+  .login-form-panel {
+    padding: 60px 35px 40px;
+  }
+
+  .login-help-box {
+    margin-top: 55px;
+  }
+}
+
+@media (max-width: 760px) {
+  .login-header {
+    margin-bottom: 28px;
+  }
+
+  .login-brand {
+    gap: 10px;
+  }
+
+  .login-brand img {
+    width: 48px;
+    height: 40px;
+  }
+
+  .login-brand h1 {
+    font-size: 15px;
+  }
+
+  .student-access-button {
+    min-width: auto;
+    padding: 10px 12px;
+    font-size: 10px;
+  }
+
+  .login-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .login-sidebar {
+    gap: 18px;
+  }
+
+  .login-intro-panel {
+    min-height: auto;
+    padding: 35px 28px;
+  }
+
+  .login-intro-panel h2 {
+    font-size: 38px;
+  }
+
+  .school-info-panel {
+    min-height: auto;
+    padding: 28px;
+  }
+
+  .login-form-panel {
+    min-height: auto;
+    padding: 40px 25px;
+  }
+
+  .login-form-content > h2 {
+    font-size: 30px;
+  }
+
+  .login-help-box {
+    margin-top: 45px;
+  }
+}
+
+@media (max-width: 420px) {
+  .login-page {
+    padding: 20px 16px;
+  }
+
+  .login-brand h1 {
+    max-width: 145px;
+    font-size: 13px;
+  }
+
+  .login-intro-panel h2 {
+    font-size: 34px;
+  }
+
+  .desktop-break {
+    display: none;
+  }
+
+  .login-form-panel {
+    padding: 32px 20px;
+  }
+}

@@ -1,12 +1,13 @@
 import { Navigate } from "react-router-dom";
 
+import Home from "../../pages/auth/Home";
 import Login from "../../pages/auth/Login";
 import Register from "../../pages/auth/Register";
 
 const publicRoutes = [
   {
     path: "/",
-    element: <Navigate to="/login" replace />,
+    element: <Home />,
   },
   {
     path: "/login",
