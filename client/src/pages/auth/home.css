@@ -208,3 +208,121 @@
     min-height: 280px;
   }
 }
+
+/* ========================================
+   HOMEPAGE ANIMATIONS
+======================================== */
+
+/* Initial page entrance */
+.home-page {
+  animation: homeFadeIn 500ms ease both;
+}
+
+.home-header {
+  animation: homeSlideDown 550ms ease both;
+}
+
+.home-intro-card {
+  animation: homeSlideUp 600ms ease 100ms both;
+}
+
+.home-school-card {
+  animation: homeSlideUp 600ms ease 220ms both;
+}
+
+.home-image-container {
+  animation: homeSlideUp 650ms ease 180ms both;
+}
+
+/* Button interactions */
+.student-access-button,
+.home-signin-button {
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.student-access-button:hover,
+.home-signin-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.10);
+}
+
+.student-access-button:active,
+.home-signin-button:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+/* Card hover interactions */
+.home-intro-card,
+.home-school-card {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.home-intro-card:hover,
+.home-school-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 9px 22px rgba(0, 0, 0, 0.08);
+}
+
+/* School image interaction */
+.home-school-image {
+  transition: transform 500ms ease;
+}
+
+.home-image-container:hover .home-school-image {
+  transform: scale(1.025);
+}
+
+/* Animation keyframes */
+@keyframes homeFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes homeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes homeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .home-page,
+  .home-header,
+  .home-intro-card,
+  .home-school-card,
+  .home-image-container {
+    animation: none;
+  }
+
+  .home-page *,
+  .home-page *::before,
+  .home-page *::after {
+    transition: none !important;
+  }
+}

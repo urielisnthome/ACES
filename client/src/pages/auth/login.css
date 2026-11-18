@@ -389,3 +389,155 @@
     padding: 32px 20px;
   }
 }
+
+/* ========================================
+   LOGIN PAGE ANIMATIONS
+======================================== */
+
+/* Initial page entrance */
+.login-page {
+  animation: loginFadeIn 500ms ease both;
+}
+
+.login-header {
+  animation: loginSlideDown 550ms ease both;
+}
+
+.login-intro-panel {
+  animation: loginSlideUp 600ms ease 100ms both;
+}
+
+.school-info-panel {
+  animation: loginSlideUp 600ms ease 220ms both;
+}
+
+.login-form-panel {
+  animation: loginSlideUp 650ms ease 160ms both;
+}
+
+/* Form panel interaction */
+.login-form-panel {
+  transition: box-shadow 250ms ease;
+}
+
+/* Input focus transitions */
+.form-group input {
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+
+/* Password visibility button */
+.show-password-button {
+  transition:
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.show-password-button:hover {
+  color: #20845b;
+  transform: translateY(-1px);
+}
+
+.show-password-button:active {
+  transform: scale(0.95);
+}
+
+/* Sign-in button */
+.sign-in-button {
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.sign-in-button:hover {
+  background: #10563b;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(23, 104, 73, 0.18);
+}
+
+.sign-in-button:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+/* Forgot password interaction */
+.forgot-password-button {
+  transition:
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.forgot-password-button:hover {
+  color: #20845b;
+  transform: translateY(-1px);
+}
+
+/* Header button */
+.login-header .student-access-button {
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.login-header .student-access-button:hover {
+  background: #e5eee8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+}
+
+.login-header .student-access-button:active {
+  transform: scale(0.97);
+}
+
+/* Animation keyframes */
+@keyframes loginFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loginSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loginSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .login-page,
+  .login-header,
+  .login-intro-panel,
+  .school-info-panel,
+  .login-form-panel {
+    animation: none;
+  }
+
+  .login-page *,
+  .login-page *::before,
+  .login-page *::after {
+    transition: none !important;
+  }
+}
