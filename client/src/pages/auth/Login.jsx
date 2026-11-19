@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-import "./login.css";
+import "../../styles/auth/login.css";
 
 function Login() {
   const navigate = useNavigate();

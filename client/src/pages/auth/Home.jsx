@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import "./home.css";
+import "../../styles/auth/home.css";
 
 import logo from "../../assets/logo.png";
 import schoolBuilding from "../../assets/school-building.jpg";
