@@ -40,13 +40,20 @@ function Assessment() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [pageView, setPageView] = useState("questions");
-  const [editedQuestion, setEditedQuestion] = useState(0);
+
+  // Editing states are separate from normal assessment navigation.
+  const [editQuestion, setEditQuestion] = useState(null);
+  const [editedAnswer, setEditedAnswer] = useState("");
 
   const question = questions[currentQuestion];
   const selectedAnswer = answers[currentQuestion];
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+
+  const progress =
+    ((currentQuestion + 1) / questions.length) * 100;
+
   const answeredCount = Object.keys(answers).length;
 
+  // NORMAL ASSESSMENT ANSWERING
   const handleAnswer = (answer) => {
     setAnswers((previous) => ({
       ...previous,
@@ -54,6 +61,7 @@ function Assessment() {
     }));
   };
 
+  // NORMAL ASSESSMENT NAVIGATION
   const handleNext = () => {
     if (!selectedAnswer) return;
 
@@ -71,16 +79,54 @@ function Assessment() {
   };
 
   const handleReview = () => {
-    setEditedQuestion(currentQuestion);
+    if (answeredCount !== questions.length) return;
     setPageView("review");
   };
 
+  // OPEN THE SPECIFIC QUESTION SELECTED FOR EDITING
   const handleEditAnswer = (index) => {
-    setCurrentQuestion(index);
-    setPageView("questions");
+    if (index < 0 || index >= questions.length) return;
+
+    setEditQuestion(index);
+    setEditedAnswer(answers[index] || "");
+    setPageView("editing");
   };
 
+  // UPDATE THE TEMPORARY ANSWER ONLY
+  const handleEditAnswerChange = (answer) => {
+    setEditedAnswer(answer);
+  };
+
+  // SAVE THE EDITED ANSWER AND RETURN DIRECTLY TO REVIEW
+  const handleSaveEdit = () => {
+    if (editQuestion === null || !editedAnswer) return;
+
+    const questionToUpdate = editQuestion;
+    const answerToSave = editedAnswer;
+
+    setAnswers((previous) => ({
+      ...previous,
+      [questionToUpdate]: answerToSave,
+    }));
+
+    // Clear editing mode.
+    setEditQuestion(null);
+    setEditedAnswer("");
+
+    // Return to the review screen, NOT the next assessment question.
+    setPageView("review");
+  };
+
+  // CANCEL EDITING WITHOUT CHANGING THE ORIGINAL ANSWER
+  const handleCancelEdit = () => {
+    setEditQuestion(null);
+    setEditedAnswer("");
+    setPageView("review");
+  };
+
+  // SUBMIT ASSESSMENT
   const handleSubmit = () => {
+    if (answeredCount !== questions.length) return;
     setPageView("submitted");
   };
 
@@ -101,6 +147,7 @@ function Assessment() {
         </button>
       </header>
 
+      {/* NORMAL ASSESSMENT */}
       {pageView === "questions" && (
         <>
           <section className="assessment-progress-card">
@@ -109,6 +156,7 @@ function Assessment() {
                 <span className="assessment-eyebrow">
                   YOUR CAREER ASSESSMENT
                 </span>
+
                 <h2>
                   Question {currentQuestion + 1} of {questions.length}
                 </h2>
@@ -215,7 +263,9 @@ function Assessment() {
 
               <section className="assessment-submit-card">
                 <span>BEFORE YOU FINISH</span>
+
                 <h2>Make every answer count.</h2>
+
                 <p>
                   Check your responses before submitting your assessment.
                 </p>
@@ -233,6 +283,79 @@ function Assessment() {
         </>
       )}
 
+      {/* EDIT ONE SPECIFIC QUESTION */}
+      {pageView === "editing" && editQuestion !== null && (
+        <section className="assessment-review-card">
+          <span className="assessment-eyebrow">
+            EDIT YOUR RESPONSE
+          </span>
+
+          <h2>Update your answer.</h2>
+
+          <p className="review-description">
+            You are editing Question {editQuestion + 1} of {questions.length}.
+            Only this response will be changed.
+          </p>
+
+          <article className="assessment-question-card">
+            <span className="assessment-eyebrow">
+              {questions[editQuestion].category}
+            </span>
+
+            <h2 className="assessment-question">
+              {questions[editQuestion].question}
+            </h2>
+
+            <p className="assessment-instruction">
+              Choose your updated response.
+            </p>
+
+            <div className="assessment-options">
+              {answerOptions.map((option) => (
+                <label
+                  key={option}
+                  className={`assessment-option ${
+                    editedAnswer === option ? "selected" : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`edit-question-${editQuestion}`}
+                    value={option}
+                    checked={editedAnswer === option}
+                    onChange={() => handleEditAnswerChange(option)}
+                  />
+
+                  <span className="custom-radio" />
+                  <span>{option}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* EDITING HAS SAVE AND CANCEL ONLY */}
+            <div className="review-actions">
+              <button
+                type="button"
+                className="previous-question-button"
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="save-edit-button"
+                onClick={handleSaveEdit}
+                disabled={!editedAnswer}
+              >
+                Save Changes
+              </button>
+            </div>
+          </article>
+        </section>
+      )}
+
+      {/* REVIEW RESPONSES */}
       {pageView === "review" && (
         <section className="assessment-review-card">
           <span className="assessment-eyebrow">
@@ -253,7 +376,9 @@ function Assessment() {
                   <span className="assessment-eyebrow">
                     QUESTION {index + 1} · {item.category}
                   </span>
+
                   <h3>{item.question}</h3>
+
                   <p>{answers[index]}</p>
                 </div>
 
@@ -272,7 +397,7 @@ function Assessment() {
               type="button"
               className="previous-question-button"
               onClick={() => {
-                setCurrentQuestion(editedQuestion);
+                setCurrentQuestion(questions.length - 1);
                 setPageView("questions");
               }}
             >
@@ -290,13 +415,17 @@ function Assessment() {
         </section>
       )}
 
+      {/* SUBMISSION CONFIRMATION */}
       {pageView === "submitted" && (
         <section className="assessment-success-card">
           <div className="success-check">✓</div>
+
           <span className="assessment-eyebrow">
             ASSESSMENT COMPLETED
           </span>
+
           <h2>Thank you for completing your assessment!</h2>
+
           <p>
             Your responses have been reviewed in this demonstration.
             Career recommendations and actual submission will be added

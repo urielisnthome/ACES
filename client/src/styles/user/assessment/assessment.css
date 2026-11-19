@@ -684,3 +684,24 @@
     transition: none !important;
   }
 }
+
+.save-edit-button {
+  /* Keep the same appearance as your existing next button */
+  background: #2f7548;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.save-edit-button:hover {
+  background: #245d39;
+}
+
+.save-edit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
