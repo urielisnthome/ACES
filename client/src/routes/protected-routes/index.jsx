@@ -1,10 +1,3 @@
-import Assessment from "../../pages/user/assessment/assessment";
-
-const protectedRoutes = [
-  {
-    path: "/assessment",
-    element: <Assessment />,
-  },
-];
+const protectedRoutes = [];
 
 export default protectedRoutes;
