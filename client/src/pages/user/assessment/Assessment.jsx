@@ -1,36 +1,84 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../../assets/logo.png";
 import "../../../styles/user/assessment/assessment.css";
 
+const stages = [
+  { title: "RIASEC", subtitle: "Vocational Interest" },
+  { title: "Skills", subtitle: "Competencies" },
+  { title: "Academic", subtitle: "Background" },
+  { title: "Personal", subtitle: "Circumstances" },
+  { title: "Career", subtitle: "Values" },
+  { title: "Readiness", subtitle: "Decision Prep" },
+];
+
 const answerOptions = [
-  "Strongly agree",
-  "Agree",
-  "Disagree",
-  "Strongly disagree",
+  {
+    label: "Strongly Agree",
+    symbol: "▲",
+    description:
+      "I actively seek hands-on digital tools, gadgets, or troubleshooting tasks.",
+    style: "green",
+  },
+  {
+    label: "Agree",
+    symbol: "◆",
+    description:
+      "I am comfortable with technology and prefer direct application over theory.",
+    style: "forest",
+  },
+  {
+    label: "Disagree",
+    symbol: "●",
+    description:
+      "I tend to prioritize creative expression, arts, or teamwork over hardware.",
+    style: "yellow",
+  },
+  {
+    label: "Strongly Disagree",
+    symbol: "■",
+    description:
+      "I avoid troubleshooting technical issues and prefer purely relational or verbal work.",
+    style: "charcoal",
+  },
 ];
 
 const questions = [
   {
-    category: "INTERESTS & READINESS",
+    stage: 0,
+    category: "RIASEC · VOCATIONAL INTEREST",
     question:
       "I enjoy working with technology and solving practical problems.",
   },
   {
-    category: "CAREER EXPLORATION",
+    stage: 1,
+    category: "SKILLS AND COMPETENCIES",
     question:
-      "I am interested in learning about different careers and the opportunities they offer.",
+      "I enjoy working with technology and solving practical problems.",
   },
   {
-    category: "CAREER CLARITY",
+    stage: 2,
+    category: "ACADEMIC BACKGROUND",
     question:
-      "I have an idea of the kind of career that I would like to pursue.",
+      "The subjects I have studied connect with the work I may want to do.",
   },
   {
-    category: "CAREER INITIATIVE",
+    stage: 3,
+    category: "PERSONAL CIRCUMSTANCES",
     question:
-      "I am willing to take steps to develop the skills needed for my future career.",
+      "I consider my personal situation when thinking about a future career.",
+  },
+  {
+    stage: 4,
+    category: "CAREER VALUES",
+    question:
+      "I value work that gives me opportunities to grow and contribute.",
+  },
+  {
+    stage: 5,
+    category: "CAREER DECISION READINESS",
+    question:
+      "I am ready to take a practical next step toward a career.",
   },
 ];
 
@@ -40,20 +88,24 @@ function Assessment() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [pageView, setPageView] = useState("questions");
-
-  // Editing states are separate from normal assessment navigation.
-  const [editQuestion, setEditQuestion] = useState(null);
-  const [editedAnswer, setEditedAnswer] = useState("");
+  const [showFinishModal, setShowFinishModal] = useState(false);
 
   const question = questions[currentQuestion];
   const selectedAnswer = answers[currentQuestion];
-
-  const progress =
-    ((currentQuestion + 1) / questions.length) * 100;
+  const activeStage = question.stage;
 
   const answeredCount = Object.keys(answers).length;
 
-  // NORMAL ASSESSMENT ANSWERING
+  useEffect(() => {
+    if (pageView !== "processing") return;
+
+    const timer = window.setTimeout(() => {
+      setPageView("results");
+    }, 3000);
+
+    return () => window.clearTimeout(timer);
+  }, [pageView]);
+
   const handleAnswer = (answer) => {
     setAnswers((previous) => ({
       ...previous,
@@ -61,15 +113,19 @@ function Assessment() {
     }));
   };
 
-  // NORMAL ASSESSMENT NAVIGATION
   const handleNext = () => {
     if (!selectedAnswer) return;
 
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((previous) => previous + 1);
-    } else {
-      setPageView("review");
+    } else if (answeredCount === questions.length) {
+      setShowFinishModal(true);
     }
+  };
+
+  const handleReviewAndSubmit = () => {
+    setShowFinishModal(false);
+    setPageView("processing");
   };
 
   const handlePrevious = () => {
@@ -78,60 +134,9 @@ function Assessment() {
     }
   };
 
-  const handleReview = () => {
-    if (answeredCount !== questions.length) return;
-    setPageView("review");
-  };
-
-  // OPEN THE SPECIFIC QUESTION SELECTED FOR EDITING
-  const handleEditAnswer = (index) => {
-    if (index < 0 || index >= questions.length) return;
-
-    setEditQuestion(index);
-    setEditedAnswer(answers[index] || "");
-    setPageView("editing");
-  };
-
-  // UPDATE THE TEMPORARY ANSWER ONLY
-  const handleEditAnswerChange = (answer) => {
-    setEditedAnswer(answer);
-  };
-
-  // SAVE THE EDITED ANSWER AND RETURN DIRECTLY TO REVIEW
-  const handleSaveEdit = () => {
-    if (editQuestion === null || !editedAnswer) return;
-
-    const questionToUpdate = editQuestion;
-    const answerToSave = editedAnswer;
-
-    setAnswers((previous) => ({
-      ...previous,
-      [questionToUpdate]: answerToSave,
-    }));
-
-    // Clear editing mode.
-    setEditQuestion(null);
-    setEditedAnswer("");
-
-    // Return to the review screen, NOT the next assessment question.
-    setPageView("review");
-  };
-
-  // CANCEL EDITING WITHOUT CHANGING THE ORIGINAL ANSWER
-  const handleCancelEdit = () => {
-    setEditQuestion(null);
-    setEditedAnswer("");
-    setPageView("review");
-  };
-
-  // SUBMIT ASSESSMENT
-  const handleSubmit = () => {
-    if (answeredCount !== questions.length) return;
-    setPageView("submitted");
-  };
-
   return (
     <main className="assessment-page">
+      {/* HEADER */}
       <header className="assessment-header">
         <div className="assessment-brand">
           <img src={logo} alt="ACES Logo" />
@@ -147,305 +152,439 @@ function Assessment() {
         </button>
       </header>
 
-      {/* NORMAL ASSESSMENT */}
+      {/* PAGE TITLE */}
+      {pageView === "questions" && (
+        <h1 className="assessment-page-title">
+          STUDENT ASSESSMENT
+        </h1>
+      )}
+
+      {/* QUESTION VIEW */}
       {pageView === "questions" && (
         <>
-          <section className="assessment-progress-card">
-            <div className="progress-heading">
-              <div>
-                <span className="assessment-eyebrow">
-                  YOUR CAREER ASSESSMENT
-                </span>
+          {/* SIX-STAGE PROGRESS TRACKER */}
+          <section className="stage-progress">
+            <div className="stage-pills">
+              {stages.map((stage, index) => {
+                const isActive = index === activeStage;
+                const isCompleted = Boolean(answers[index]);
+                const status = isActive
+                  ? "active"
+                  : isCompleted
+                  ? "completed"
+                  : "upcoming";
 
-                <h2>
-                  Question {currentQuestion + 1} of {questions.length}
-                </h2>
-              </div>
+                return (
+                  <button
+                    type="button"
+                    key={stage.title}
+                    className={`stage-pill ${status}`}
+                    onClick={() => {
+                      if (index !== currentQuestion) {
+                        setCurrentQuestion(index);
+                      }
+                    }}
+                    aria-current={isActive ? "step" : undefined}
+                    aria-label={`Go to section ${index + 1}: ${stage.title}`}
+                  >
+                    <div className="stage-number">
+                      {isCompleted ? "✓" : index + 1}
+                    </div>
 
-              <p>Your answers stay here as you go.</p>
+                    <div className="stage-copy">
+                      <strong>
+                        {index + 1}. {stage.title}
+                      </strong>
+                      <small>{stage.subtitle}</small>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
-            <div
-              className="progress-track"
-              role="progressbar"
-              aria-valuenow={currentQuestion + 1}
-              aria-valuemin={1}
-              aria-valuemax={questions.length}
-              aria-label="Assessment progress"
-            >
-              <div
-                className="progress-fill"
-                style={{ width: `${progress}%` }}
-              />
+            {/* SEGMENTED PROGRESS BAR */}
+            <div className="segmented-progress">
+              {stages.map((stage, index) => (
+                <span
+                  key={stage.title}
+                  className={
+                    index === activeStage
+                      ? "current"
+                      : answers[index]
+                      ? "done"
+                      : ""
+                  }
+                />
+              ))}
             </div>
           </section>
 
-          <section className="assessment-content">
-            <article className="assessment-question-card">
-              <span className="assessment-eyebrow">
-                {question.category}
-              </span>
+          {/* QUESTION CARD */}
+          <section
+            key={currentQuestion}
+            className="assessment-question-card question-transition"
+          >
+            <span className="assessment-eyebrow">
+              {question.category}
+            </span>
 
-              <h2 className="assessment-question">
-                {question.question}
-              </h2>
+            <h2 className="assessment-question">
+              {currentQuestion + 1}. “{question.question}”
+            </h2>
 
-              <p className="assessment-instruction">
-                Choose the response that best describes you.
-              </p>
+            <p className="assessment-instruction">
+              Tap or press the option that best reflects how you
+              naturally work, think, and choose in your daily
+              activities.
+            </p>
 
-              <div className="assessment-options">
-                {answerOptions.map((option) => (
-                  <label
-                    key={option}
-                    className={`assessment-option ${
-                      selectedAnswer === option ? "selected" : ""
+            {/* FOUR INTERACTIVE ANSWER TILES */}
+            <div className="assessment-options">
+              {answerOptions.map((option) => {
+                const isSelected =
+                  selectedAnswer === option.label;
+
+                return (
+                  <button
+                    type="button"
+                    key={option.label}
+                    className={`answer-tile ${option.style} ${
+                      isSelected ? "selected" : ""
                     }`}
+                    onClick={() => handleAnswer(option.label)}
+                    aria-pressed={isSelected}
                   >
-                    <input
-                      type="radio"
-                      name={`question-${currentQuestion}`}
-                      value={option}
-                      checked={selectedAnswer === option}
-                      onChange={() => handleAnswer(option)}
-                    />
+                    <div className="answer-content">
+                      <span className="answer-symbol">
+                        {option.symbol}
+                      </span>
 
-                    <span className="custom-radio" />
-                    <span>{option}</span>
-                  </label>
-                ))}
-              </div>
+                      <div className="answer-text">
+                        <div className="answer-heading">
+                          <strong>{option.label}</strong>
 
-              <div className="assessment-navigation">
-                <button
-                  type="button"
-                  className="previous-question-button"
-                  onClick={handlePrevious}
-                  disabled={currentQuestion === 0}
-                >
-                  Previous question
-                </button>
+                          {isSelected && (
+                            <span className="selected-badge">
+                              Selected
+                            </span>
+                          )}
+                        </div>
 
-                <button
-                  type="button"
-                  className="next-question-button"
-                  onClick={handleNext}
-                  disabled={!selectedAnswer}
-                >
-                  {currentQuestion === questions.length - 1
-                    ? "Review responses"
-                    : "Next question"}
-                </button>
-              </div>
-            </article>
+                        <p>{option.description}</p>
+                      </div>
+                    </div>
 
-            <aside className="assessment-side-column">
-              <section className="assessment-reflection-card">
-                <span className="reflection-eyebrow">
-                  A LITTLE REFLECTION.
-                </span>
+                    <span className="answer-indicator">
+                      {isSelected ? "✓" : ""}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-                <h2>A clearer direction.</h2>
+            {/* NAVIGATION */}
+            <div className="assessment-navigation">
+              <button
+                type="button"
+                className="previous-question-button"
+                onClick={handlePrevious}
+                disabled={currentQuestion === 0}
+              >
+                Previous question
+              </button>
 
-                <p>
-                  There are no right or wrong answers. Your interests and
-                  readiness help shape the guidance you receive.
-                </p>
-
-                <div className="reflection-divider" />
-
-                <small>
-                  {answeredCount > 0
-                    ? `You've answered ${answeredCount} of ${questions.length} questions. You can review your responses before submitting.`
-                    : "Take your time. Answer each question based on your own interests and experiences."}
-                </small>
-              </section>
-
-              <section className="assessment-submit-card">
-                <span>BEFORE YOU FINISH</span>
-
-                <h2>Make every answer count.</h2>
-
-                <p>
-                  Check your responses before submitting your assessment.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={handleReview}
-                  disabled={answeredCount !== questions.length}
-                >
-                  Review &amp; submit
-                </button>
-              </section>
-            </aside>
+              <button
+                type="button"
+                className="next-question-button"
+                onClick={handleNext}
+                disabled={
+                  !selectedAnswer ||
+                  (currentQuestion === questions.length - 1 &&
+                    answeredCount !== questions.length)
+                }
+              >
+                {currentQuestion === questions.length - 1
+                  ? "Finish"
+                  : "Next question"}
+              </button>
+            </div>
           </section>
         </>
       )}
 
-      {/* EDIT ONE SPECIFIC QUESTION */}
-      {pageView === "editing" && editQuestion !== null && (
-        <section className="assessment-review-card">
-          <span className="assessment-eyebrow">
-            EDIT YOUR RESPONSE
-          </span>
+      {/* PROCESSING VIEW */}
+      {pageView === "processing" && (
+        <section className="assessment-processing-page">
+          <div className="processing-heading">Processing..</div>
 
-          <h2>Update your answer.</h2>
+          <section className="processing-card" aria-live="polite">
+            <div className="processing-card-header">
+              <div>
+                <h2>Almost ready.</h2>
+                <p>
+                  Organizing your assessment responses into your personalized career
+                  pathway. This only takes a moment.
+                </p>
+              </div>
+              <div className="processing-icon" aria-hidden="true">
+                <span>↻</span>
+              </div>
+            </div>
 
-          <p className="review-description">
-            You are editing Question {editQuestion + 1} of {questions.length}.
-            Only this response will be changed.
-          </p>
+            <div className="processing-card-body">
+              <div className="processing-progress-heading">
+                <strong>Processing your answers</strong>
+                <span>85%</span>
+              </div>
 
-          <article className="assessment-question-card">
-            <span className="assessment-eyebrow">
-              {questions[editQuestion].category}
-            </span>
+              <div
+                className="processing-progress-track"
+                role="progressbar"
+                aria-label="Assessment processing progress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="85"
+              >
+                <span className="processing-progress-fill" />
+              </div>
 
-            <h2 className="assessment-question">
-              {questions[editQuestion].question}
-            </h2>
+              <div className="processing-status">
+                <span className="processing-saved">
+                  <span className="processing-status-check">✓</span>
+                  Responses saved
+                </span>
+                <span className="processing-status-dot">•</span>
+                <span>Matching career tracks</span>
+              </div>
 
-            <p className="assessment-instruction">
-              Choose your updated response.
+              <div className="processing-divider" />
+
+              <div className="completed-sections-heading">
+                <span>COMPLETED SECTIONS</span>
+                <strong>{answeredCount} of {questions.length} Done</strong>
+              </div>
+
+              <div className="completed-sections-grid">
+                {stages.map((stage, index) => {
+                  const sectionNames = [
+                    "RIASEC Vocational Interest",
+                    "Skills & Competencies",
+                    "Academic Background",
+                    "Personal Circumstances",
+                    "Career Values",
+                    "Career Decision Readiness",
+                  ];
+
+                  return (
+                    <div
+                      className={`completed-section ${
+                        answers[index] ? "is-complete" : "is-pending"
+                      }`}
+                      key={stage.title}
+                    >
+                      <span className="completed-section-check">
+                        {answers[index] ? "✓" : index + 1}
+                      </span>
+                      <strong>
+                        {index + 1}. {sectionNames[index]}
+                      </strong>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        </section>
+      )}
+
+      {/* RESULTS VIEW */}
+      {pageView === "results" && (
+        <section className="assessment-results-page">
+          <div className="results-intro">
+            <span className="results-eyebrow">YOUR ASSESSMENT RESULTS</span>
+            <h2>A path that builds on you.</h2>
+            <p>
+              Explore your recommended direction, then turn it into a practical next step.
             </p>
+          </div>
 
-            <div className="assessment-options">
-              {answerOptions.map((option) => (
-                <label
-                  key={option}
-                  className={`assessment-option ${
-                    editedAnswer === option ? "selected" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name={`edit-question-${editQuestion}`}
-                    value={option}
-                    checked={editedAnswer === option}
-                    onChange={() => handleEditAnswerChange(option)}
-                  />
+          <div className="results-recommendations">
+            <article className="primary-recommendation">
+              <span>Primary Recommendation</span>
+              <h3>Information &amp;<br /> communications technology</h3>
+              <p>
+                Build practical digital skills and explore entry-level technical
+                support, computer servicing, or further ICT study.
+              </p>
+            </article>
 
-                  <span className="custom-radio" />
-                  <span>{option}</span>
-                </label>
-              ))}
-            </div>
-
-            {/* EDITING HAS SAVE AND CANCEL ONLY */}
-            <div className="review-actions">
-              <button
-                type="button"
-                className="previous-question-button"
-                onClick={handleCancelEdit}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="save-edit-button"
-                onClick={handleSaveEdit}
-                disabled={!editedAnswer}
-              >
-                Save Changes
-              </button>
-            </div>
-          </article>
-        </section>
-      )}
-
-      {/* REVIEW RESPONSES */}
-      {pageView === "review" && (
-        <section className="assessment-review-card">
-          <span className="assessment-eyebrow">
-            YOUR CAREER ASSESSMENT
-          </span>
-
-          <h2>Review your responses.</h2>
-
-          <p className="review-description">
-            Take a moment to check your answers. You can still make changes
-            before submitting.
-          </p>
-
-          <div className="review-list">
-            {questions.map((item, index) => (
-              <article className="review-item" key={index}>
-                <div>
-                  <span className="assessment-eyebrow">
-                    QUESTION {index + 1} · {item.category}
-                  </span>
-
-                  <h3>{item.question}</h3>
-
-                  <p>{answers[index]}</p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleEditAnswer(index)}
-                >
-                  Edit answer
-                </button>
+            <div className="alternative-recommendations">
+              <article className="alternative-pathway">
+                <span>Alternative Pathway</span>
+                <h3>Business &amp; Entrepreneurship</h3>
+                <p>
+                  Business entrepreneurship (or entrepreneur), which refers to
+                  creating, launching, and running a new business while taking on
+                  financial risk to make a profit or solve a problem.
+                </p>
               </article>
-            ))}
+
+              <article className="alternative-pathway">
+                <span>Alternative Pathway</span>
+                <h3>Healthcare Services</h3>
+                <p>
+                  Medical, therapeutic, and support services provided by licensed
+                  professionals and health organizations to promote, maintain,
+                  restore, or improve human health.
+                </p>
+              </article>
+            </div>
           </div>
 
-          <div className="review-actions">
-            <button
-              type="button"
-              className="previous-question-button"
-              onClick={() => {
-                setCurrentQuestion(questions.length - 1);
-                setPageView("questions");
-              }}
-            >
-              Back to assessment
-            </button>
+          <section className="generated-explanation">
+            <h3>Generated Explanation</h3>
+            <p>
+              This sample profile combines interest in practical problem-solving
+              with readiness to explore a pathway. ICT is an illustrative first
+              direction; business remains an alternative to discuss with your
+              guidance counselor.
+            </p>
+          </section>
 
+          <div className="results-actions">
             <button
               type="button"
-              className="next-question-button"
-              onClick={handleSubmit}
+              className="next-question-button results-roadmap-button"
+              onClick={() => setPageView("roadmap")}
             >
-              Submit assessment
+              View my roadmap
             </button>
           </div>
         </section>
       )}
 
-      {/* SUBMISSION CONFIRMATION */}
-      {pageView === "submitted" && (
-        <section className="assessment-success-card">
-          <div className="success-check">✓</div>
+      {/* PERSONALIZED ROADMAP VIEW */}
+      {pageView === "roadmap" && (
+        <section className="assessment-roadmap-page">
+          <div className="roadmap-intro">
+            <span>YOUR NEXT STEPS - Information Communications Technology</span>
+            <h2>Personalized Roadmap</h2>
+            <p>From where you are to what comes next — one achievable step at a time.</p>
+          </div>
 
-          <span className="assessment-eyebrow">
-            ASSESSMENT COMPLETED
-          </span>
+          <section className="roadmap-board" aria-label="Your four-step ICT roadmap">
+            <svg
+              className="roadmap-path"
+              viewBox="0 0 1160 390"
+              preserveAspectRatio="none"
+              role="img"
+              aria-label="A winding road connecting four career development steps"
+            >
+              <path
+                className="roadmap-road"
+                d="M 35 260 L 180 260 C 255 260 260 145 350 145 L 455 145 C 545 145 550 260 640 260 L 760 260 C 850 260 855 155 940 155 L 1085 155"
+              />
+              <path
+                className="roadmap-road-center"
+                d="M 35 260 L 180 260 C 255 260 260 145 350 145 L 455 145 C 545 145 550 260 640 260 L 760 260 C 850 260 855 155 940 155 L 1085 155"
+              />
+            </svg>
 
-          <h2>Thank you for completing your assessment!</h2>
+            <article className="roadmap-step roadmap-step-one">
+              <div className="roadmap-step-copy">
+                <span className="roadmap-step-kicker">01 • FOUNDATION</span>
+                <h3>Core Digital Skills</h3>
+                <p>Build familiarity with operating systems, setup, and basic troubleshooting.</p>
+              </div>
+              <div className="roadmap-node roadmap-node-green">
+                <span aria-hidden="true">▱</span>
+              </div>
+              <span className="roadmap-node-stem" />
+              <span className="roadmap-node-dot" />
+            </article>
 
-          <p>
-            Your responses have been reviewed in this demonstration.
-            Career recommendations and actual submission will be added
-            when the backend is integrated.
-          </p>
+            <article className="roadmap-step roadmap-step-two">
+              <div className="roadmap-node roadmap-node-yellow">
+                <span aria-hidden="true">⚒</span>
+              </div>
+              <span className="roadmap-node-stem" />
+              <span className="roadmap-node-dot" />
+              <div className="roadmap-step-copy">
+                <span className="roadmap-step-kicker">02 • PRACTICE</span>
+                <h3>Practical ICT Training</h3>
+                <p>Develop hands-on skills in hardware servicing, networking, and helpdesk support.</p>
+              </div>
+            </article>
 
-          <button
-            type="button"
-            className="next-question-button"
-            onClick={() => navigate("/")}
+            <article className="roadmap-step roadmap-step-three">
+              <div className="roadmap-step-copy">
+                <span className="roadmap-step-kicker">03 • CREDENTIAL</span>
+                <h3>Earn Qualification</h3>
+                <p>Complete your practical skills assessment (TESDA NC II).</p>
+              </div>
+              <div className="roadmap-node roadmap-node-green">
+                <span aria-hidden="true">♙</span>
+              </div>
+              <span className="roadmap-node-stem" />
+              <span className="roadmap-node-dot" />
+            </article>
+
+            <article className="roadmap-step roadmap-step-four">
+              <div className="roadmap-node roadmap-node-dark">
+                <span aria-hidden="true">⚑</span>
+              </div>
+              <span className="roadmap-node-stem" />
+              <span className="roadmap-node-dot" />
+              <div className="roadmap-step-copy">
+                <span className="roadmap-step-kicker">04 • NEXT CHAPTER</span>
+                <h3>Career Launch</h3>
+                <p>Enter IT support roles or continue into formal ICT track education.</p>
+              </div>
+            </article>
+          </section>
+        </section>
+      )}
+
+      {/* FOOTER */}
+      {/* FINISH CONFIRMATION MODAL */}
+      {showFinishModal && (
+        <div
+          className="finish-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowFinishModal(false);
+            }
+          }}
+        >
+          <section
+            className="finish-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="finish-modal-title"
+            aria-describedby="finish-modal-description"
           >
-            Return to home
-          </button>
-        </section>
+            <span className="finish-modal-eyebrow">BEFORE YOU FINISH</span>
+            <h2 id="finish-modal-title">Make every answer count.</h2>
+            <p id="finish-modal-description">
+              Check your responses before submitting your assessment.
+            </p>
+            <button
+              type="button"
+              className="finish-modal-submit"
+              onClick={handleReviewAndSubmit}
+            >
+              Review &amp; submit
+            </button>
+          </section>
+        </div>
       )}
 
+      {pageView === "questions" && (
       <footer className="assessment-footer">
-        <strong>ALS CAREER SYSTEM EVALUATOR</strong>
         <span>Private responses. Personalized guidance.</span>
       </footer>
+      )}
     </main>
   );
 }
