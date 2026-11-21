@@ -1,11 +1,15 @@
-import { createBrowserRouter } from "react-router-dom";
-
-import publicRoutes from "./public-routes";
-import protectedRoutes from "./protected-routes";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import Assessment from "../pages/user/assessment/Assessment";
 
 const router = createBrowserRouter([
-  ...publicRoutes,
-  ...protectedRoutes,
+  {
+    path: "/",
+    element: <Navigate to="/assessment" replace />,
+  },
+  {
+    path: "/assessment",
+    element: <Assessment />,
+  },
 ]);
 
 export default router;
