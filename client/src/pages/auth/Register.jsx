@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { register } from "../../api/authApi";
 import "../../styles/auth/register.css";
 
 import logo from "../../assets/logo.png";
@@ -17,12 +18,26 @@ function Register() {
     email: "",
     gender: "",
     birthdate: "",
-    school_level: "",
+    age: "",
+    address_number: "",
+    street: "",
+    barangay: "",
+    district: "",
+    municipality: "",
+    city: "",
+    province: "",
+    zip_code: "",
+    contact_number: "",
+    parent_guardian_name: "",
+    guardian_contact_number: "",
     password: "",
+    password_confirmation: "",
   });
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const studentName = [
     formData.first_name,
@@ -30,7 +45,7 @@ function Register() {
     formData.last_name,
     formData.extension,
   ]
-    .filter(Boolean)
+    .filter((part) => part.trim())
     .join(" ");
 
   const handleChange = (e) => {
@@ -44,6 +59,7 @@ function Register() {
     setErrors((prev) => ({
       ...prev,
       [name]: "",
+      general: "",
     }));
   };
 
@@ -58,6 +74,7 @@ function Register() {
     setErrors((prev) => ({
       ...prev,
       lrn: "",
+      general: "",
     }));
   };
 
@@ -76,7 +93,9 @@ function Register() {
       newErrors.lrn = "LRN must contain exactly 12 digits.";
     }
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Enter a valid email address.";
     }
 
@@ -88,12 +107,49 @@ function Register() {
       newErrors.birthdate = "Birthdate is required.";
     }
 
-    if (!formData.school_level) {
-      newErrors.school_level = "Please select a school level.";
+    if (!formData.age || Number(formData.age) <= 0) {
+      newErrors.age = "Enter a valid age.";
+    }
+
+    const addressFields = [
+      "address_number",
+      "street",
+      "barangay",
+      "district",
+      "municipality",
+      "city",
+      "province",
+      "zip_code",
+    ];
+
+    addressFields.forEach((field) => {
+      if (!formData[field].trim()) {
+        newErrors[field] = `${field.replaceAll("_", " ")} is required.`;
+      }
+    });
+
+    if (!formData.contact_number.trim()) {
+      newErrors.contact_number = "Contact number is required.";
+    }
+
+    if (!formData.parent_guardian_name.trim()) {
+      newErrors.parent_guardian_name =
+        "Parent or guardian name is required.";
+    }
+
+    if (!formData.guardian_contact_number.trim()) {
+      newErrors.guardian_contact_number =
+        "Guardian contact number is required.";
     }
 
     if (formData.password.length < 8) {
-      newErrors.password = "Initial password must be at least 8 characters.";
+      newErrors.password = "Password must be at least 8 characters.";
+    }
+
+    if (!formData.password_confirmation) {
+      newErrors.password_confirmation = "Please confirm the password.";
+    } else if (formData.password !== formData.password_confirmation) {
+      newErrors.password_confirmation = "Passwords do not match.";
     }
 
     setErrors(newErrors);
@@ -101,37 +157,106 @@ function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) return;
 
-    alert(
-      "Student information validated successfully! Actual account creation will be available after backend integration."
-    );
+    const registrationData = {
+      lrn: formData.lrn,
+      password: formData.password,
+      password_confirmation: formData.password_confirmation,
+      name: studentName,
+      email: formData.email.trim(),
+      age: Number(formData.age),
+      gender: formData.gender,
+      birthdate: formData.birthdate,
+      address: {
+        address_number: formData.address_number.trim(),
+        street: formData.street.trim(),
+        barangay: formData.barangay.trim(),
+        district: formData.district.trim(),
+        municipality: formData.municipality.trim(),
+        city: formData.city.trim(),
+        province: formData.province.trim(),
+        zip_code: formData.zip_code.trim(),
+      },
+      contact_number: formData.contact_number.trim(),
+      parent_guardian_name: formData.parent_guardian_name.trim(),
+      guardian_contact_number: formData.guardian_contact_number.trim(),
+    };
+
+    try {
+      setIsSubmitting(true);
+      setErrors({});
+
+      await register(registrationData);
+
+      alert("Student account registered successfully!");
+      navigate("/login");
+    } catch (error) {
+      const responseData = error.response?.data;
+
+      if (responseData?.errors) {
+        const backendErrors = {};
+
+        Object.entries(responseData.errors).forEach(([field, messages]) => {
+          const fieldName = field.startsWith("address.")
+            ? field.replace("address.", "")
+            : field;
+
+          backendErrors[fieldName] = Array.isArray(messages)
+            ? messages[0]
+            : messages;
+        });
+
+        setErrors(backendErrors);
+      } else {
+        setErrors({
+          general:
+            responseData?.message ||
+            "Registration failed. Please check your information and try again.",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const renderAddressField = (name, label, placeholder) => (
+    <div className="register-field">
+      <label htmlFor={name}>{label}</label>
+      <input
+        id={name}
+        name={name}
+        value={formData[name]}
+        onChange={handleChange}
+        placeholder={placeholder}
+        required
+      />
+      {errors[name] && (
+        <small className="register-error">{errors[name]}</small>
+      )}
+    </div>
+  );
 
   return (
     <div className="register-page">
-
-      {/* SIDEBAR */}
       <aside className="register-sidebar">
-        <div className="sidebar-workspace">
-          ADMIN WORKSPACE
-        </div>
+        <div className="sidebar-workspace">ADMIN WORKSPACE</div>
 
         <nav className="sidebar-navigation">
-          <button className="sidebar-item active">
+          <button type="button" className="sidebar-item active">
             <span className="sidebar-icon">▦</span>
             Dashboard
           </button>
 
-          <button className="sidebar-item">
+          <button type="button" className="sidebar-item">
             <span className="sidebar-icon">♙</span>
             Students
           </button>
 
-          <button className="sidebar-item">
+          <button type="button" className="sidebar-item">
             <span className="sidebar-icon">♧</span>
             Assessments
             <span className="sidebar-chevron">⌄</span>
@@ -139,6 +264,7 @@ function Register() {
         </nav>
 
         <button
+          type="button"
           className="sidebar-logout"
           onClick={() => navigate("/")}
         >
@@ -147,27 +273,18 @@ function Register() {
         </button>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="register-main">
-
-        {/* HEADER */}
         <header className="register-header">
           <div className="register-brand">
             <img src={logo} alt="ACES Logo" />
             <h2>ALS Career Evaluator System</h2>
           </div>
 
-          <span className="portal-label">
-            SCHOOL / STUDENT PORTAL
-          </span>
+          <span className="portal-label">SCHOOL / STUDENT PORTAL</span>
         </header>
 
-        {/* PAGE CONTENT */}
         <div className="register-content">
-
-          {/* FORM COLUMN */}
           <section className="register-form-column">
-
             <div className="register-page-heading">
               <span>ADMIN / REGISTRATION</span>
               <h1>Register a student</h1>
@@ -177,17 +294,13 @@ function Register() {
             </div>
 
             <form onSubmit={handleSubmit}>
-
-              {/* STUDENT DETAILS */}
               <section className="student-details-card">
-
                 <h3 className="section-heading">
                   <span>01</span>
                   Enter student details
                 </h3>
 
                 <div className="register-fields">
-
                   <div className="register-field full-width">
                     <label htmlFor="first_name">First Name</label>
                     <input
@@ -196,6 +309,7 @@ function Register() {
                       value={formData.first_name}
                       onChange={handleChange}
                       placeholder="Enter first name"
+                      required
                     />
                     {errors.first_name && (
                       <small className="register-error">{errors.first_name}</small>
@@ -222,6 +336,7 @@ function Register() {
                         value={formData.last_name}
                         onChange={handleChange}
                         placeholder="Enter last name"
+                        required
                       />
                       {errors.last_name && (
                         <small className="register-error">{errors.last_name}</small>
@@ -241,9 +356,8 @@ function Register() {
                   </div>
 
                   <div className="register-grid-three">
-
                     <div className="register-field">
-                      <label htmlFor="student_name">Student name</label>
+                      <label htmlFor="student_name">Student Name</label>
                       <input
                         id="student_name"
                         value={studentName}
@@ -262,6 +376,7 @@ function Register() {
                         inputMode="numeric"
                         maxLength={12}
                         placeholder="12-digit LRN"
+                        required
                       />
                       {errors.lrn && (
                         <small className="register-error">{errors.lrn}</small>
@@ -277,16 +392,15 @@ function Register() {
                         value={formData.email}
                         onChange={handleChange}
                         placeholder="student@example.com"
+                        required
                       />
                       {errors.email && (
                         <small className="register-error">{errors.email}</small>
                       )}
                     </div>
-
                   </div>
 
                   <div className="register-grid-three">
-
                     <div className="register-field">
                       <label htmlFor="gender">Gender</label>
                       <select
@@ -294,6 +408,7 @@ function Register() {
                         name="gender"
                         value={formData.gender}
                         onChange={handleChange}
+                        required
                       >
                         <option value="">Select gender</option>
                         <option value="Male">Male</option>
@@ -312,6 +427,7 @@ function Register() {
                         type="date"
                         value={formData.birthdate}
                         onChange={handleChange}
+                        required
                       />
                       {errors.birthdate && (
                         <small className="register-error">{errors.birthdate}</small>
@@ -319,44 +435,117 @@ function Register() {
                     </div>
 
                     <div className="register-field">
-                      <label>School level</label>
-
-                      <div className="school-level-options">
-                        <label>
-                          <input
-                            type="radio"
-                            name="school_level"
-                            value="JHS"
-                            checked={formData.school_level === "JHS"}
-                            onChange={handleChange}
-                          />
-                          JHS
-                        </label>
-
-                        <label>
-                          <input
-                            type="radio"
-                            name="school_level"
-                            value="SHS"
-                            checked={formData.school_level === "SHS"}
-                            onChange={handleChange}
-                          />
-                          SHS
-                        </label>
-                      </div>
-
-                      {errors.school_level && (
-                        <small className="register-error">{errors.school_level}</small>
+                      <label htmlFor="age">Age</label>
+                      <input
+                        id="age"
+                        name="age"
+                        type="number"
+                        min="1"
+                        value={formData.age}
+                        onChange={handleChange}
+                        placeholder="Enter age"
+                        required
+                      />
+                      {errors.age && (
+                        <small className="register-error">{errors.age}</small>
                       )}
                     </div>
-
                   </div>
                 </div>
               </section>
 
-              {/* ACCOUNT CREATION */}
-              <section className="account-creation-card">
+              <section className="student-details-card">
+                <h3 className="section-heading">
+                  <span>02</span>
+                  Enter address details
+                </h3>
 
+                <div className="register-fields">
+                  <div className="register-grid-two">
+                    {renderAddressField("address_number", "Address Number", "e.g. 123")}
+                    {renderAddressField("street", "Street", "Enter street")}
+                  </div>
+
+                  <div className="register-grid-two">
+                    {renderAddressField("barangay", "Barangay", "Enter barangay")}
+                    {renderAddressField("district", "District", "Enter district")}
+                  </div>
+
+                  <div className="register-grid-two">
+                    {renderAddressField("municipality", "Municipality", "Enter municipality")}
+                    {renderAddressField("city", "City", "Enter city")}
+                  </div>
+
+                  <div className="register-grid-two">
+                    {renderAddressField("province", "Province", "Enter province")}
+                    {renderAddressField("zip_code", "ZIP Code", "Enter ZIP code")}
+                  </div>
+                </div>
+              </section>
+
+              <section className="student-details-card">
+                <h3 className="section-heading">
+                  <span>03</span>
+                  Contact and guardian details
+                </h3>
+
+                <div className="register-fields">
+                  <div className="register-field full-width">
+                    <label htmlFor="contact_number">Contact Number</label>
+                    <input
+                      id="contact_number"
+                      name="contact_number"
+                      type="tel"
+                      value={formData.contact_number}
+                      onChange={handleChange}
+                      placeholder="Enter contact number"
+                      required
+                    />
+                    {errors.contact_number && (
+                      <small className="register-error">{errors.contact_number}</small>
+                    )}
+                  </div>
+
+                  <div className="register-field full-width">
+                    <label htmlFor="parent_guardian_name">
+                      Parent / Guardian Name
+                    </label>
+                    <input
+                      id="parent_guardian_name"
+                      name="parent_guardian_name"
+                      value={formData.parent_guardian_name}
+                      onChange={handleChange}
+                      placeholder="Enter parent or guardian name"
+                      required
+                    />
+                    {errors.parent_guardian_name && (
+                      <small className="register-error">{errors.parent_guardian_name}</small>
+                    )}
+                  </div>
+
+                  <div className="register-field full-width">
+                    <label htmlFor="guardian_contact_number">
+                      Guardian Contact Number
+                    </label>
+                    <input
+                      id="guardian_contact_number"
+                      name="guardian_contact_number"
+                      type="tel"
+                      value={formData.guardian_contact_number}
+                      onChange={handleChange}
+                      placeholder="Enter guardian contact number"
+                      required
+                    />
+                    {errors.guardian_contact_number && (
+                      <small className="register-error">
+                        {errors.guardian_contact_number}
+                      </small>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section className="account-creation-card">
                 <div className="account-section-heading">
                   <h3>
                     <span>04</span>
@@ -367,14 +556,13 @@ function Register() {
                 </div>
 
                 <div className="account-fields">
-
                   <div className="identifier-box">
                     <small>LRN / Sign-in Identifier</small>
                     <strong>{formData.lrn || "Enter student LRN above"}</strong>
                   </div>
 
                   <div className="register-field">
-                    <label htmlFor="password">Password Default</label>
+                    <label htmlFor="password">Password</label>
 
                     <div className="default-password-wrapper">
                       <input
@@ -383,7 +571,8 @@ function Register() {
                         type={showPassword ? "text" : "password"}
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Example1223"
+                        placeholder="Enter password"
+                        required
                       />
 
                       <button
@@ -399,20 +588,52 @@ function Register() {
                     )}
                   </div>
 
+                  <div className="register-field">
+                    <label htmlFor="password_confirmation">Confirm Password</label>
+
+                    <div className="default-password-wrapper">
+                      <input
+                        id="password_confirmation"
+                        name="password_confirmation"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.password_confirmation}
+                        onChange={handleChange}
+                        placeholder="Confirm password"
+                        required
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? "Hide" : "Show"}
+                      </button>
+                    </div>
+
+                    {errors.password_confirmation && (
+                      <small className="register-error">
+                        {errors.password_confirmation}
+                      </small>
+                    )}
+                  </div>
                 </div>
 
-                <button type="submit" className="create-account-button">
-                  Create user account
+                {errors.general && (
+                  <small className="register-error">{errors.general}</small>
+                )}
+
+                <button
+                  type="submit"
+                  className="create-account-button"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Creating account..." : "Create user account"}
                 </button>
-
               </section>
-
             </form>
           </section>
 
-          {/* RIGHT INFORMATION PANEL */}
           <aside className="registration-guide">
-
             <span className="guide-eyebrow">STUDENT REGISTRATION</span>
 
             <h2>
@@ -426,7 +647,6 @@ function Register() {
             </p>
 
             <div className="registration-steps">
-
               <div className="registration-step">
                 <strong>01</strong>
                 <div>
@@ -438,16 +658,16 @@ function Register() {
               <div className="registration-step">
                 <strong>02</strong>
                 <div>
-                  <p>Check valid credentials</p>
-                  <small>Verified</small>
+                  <p>Enter address details</p>
+                  <small>Required</small>
                 </div>
               </div>
 
               <div className="registration-step">
                 <strong>03</strong>
                 <div>
-                  <p>Check school enrollment</p>
-                  <small>Student confirmed</small>
+                  <p>Enter contact details</p>
+                  <small>Required</small>
                 </div>
               </div>
 
@@ -466,10 +686,8 @@ function Register() {
                   <small>After account creation</small>
                 </div>
               </div>
-
             </div>
           </aside>
-
         </div>
       </main>
     </div>
